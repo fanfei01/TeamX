@@ -4,9 +4,14 @@ Recognizes e-version of building instructions in PDF format with pictures and te
 """
 
 import io
+import logging
 from typing import List, Dict, Any, Optional
 from PyPDF2 import PdfReader
 from PIL import Image
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class InstructionStep:
@@ -67,7 +72,7 @@ class PDFRecognizer:
             
             return True
         except Exception as e:
-            print(f"Error loading PDF: {e}")
+            logger.error(f"Error loading PDF: {e}")
             return False
     
     def extract_text_from_pdf(self, pdf_path: str) -> List[Dict[str, Any]]:
@@ -94,7 +99,7 @@ class PDFRecognizer:
                 })
                 
         except Exception as e:
-            print(f"Error extracting text: {e}")
+            logger.error(f"Error extracting text: {e}")
         
         return pages_content
     
@@ -136,7 +141,7 @@ class PDFRecognizer:
                                     img = Image.frombytes("L", size, data)
                                     page_images.append(img)
                             except Exception as img_error:
-                                print(f"Error extracting image from page {page_num}: {img_error}")
+                                logger.warning(f"Error extracting image from page {page_num}: {img_error}")
                 
                 images_by_page.append({
                     "page_number": page_num,
@@ -145,7 +150,7 @@ class PDFRecognizer:
                 })
                 
         except Exception as e:
-            print(f"Error extracting images: {e}")
+            logger.error(f"Error extracting images: {e}")
         
         return images_by_page
     

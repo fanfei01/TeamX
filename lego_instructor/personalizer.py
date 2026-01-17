@@ -137,8 +137,9 @@ class InstructionPersonalizer:
             score = 0
             
             # Check if unit matches interests
+            from .instruction_decomposer import UnitType
             if InterestCategory.TECHNIQUES in self.user_profile.interests:
-                if "technique" in unit.content.lower() or hasattr(unit, 'unit_type') and str(unit.unit_type).endswith('TECHNIQUE'):
+                if "technique" in unit.content.lower() or (hasattr(unit, 'unit_type') and unit.unit_type == UnitType.TECHNIQUE):
                     score += 10
             
             if InterestCategory.SPEED_BUILD in self.user_profile.interests:
@@ -189,8 +190,13 @@ class InstructionPersonalizer:
         pacing = self.user_profile.preferences.get("pacing", "normal")
         
         if pacing == "fast":
-            # Skip some intermediate explanatory units
-            return [u for i, u in enumerate(units) if i % 3 != 1 or u.difficulty >= 3]
+            # Fast pacing: Skip every 3rd unit to reduce total time,
+            # but always keep high-difficulty units (3+) for quality
+            SKIP_INTERVAL = 3
+            SKIP_POSITION = 1  # Skip middle item in each group of 3
+            MIN_DIFFICULTY_TO_KEEP = 3
+            return [u for i, u in enumerate(units) 
+                   if i % SKIP_INTERVAL != SKIP_POSITION or u.difficulty >= MIN_DIFFICULTY_TO_KEEP]
         
         elif pacing == "slow":
             # Keep all units as-is
